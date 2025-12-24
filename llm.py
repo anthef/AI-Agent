@@ -14,10 +14,11 @@ from typing import Any
 
 import google.generativeai as genai
 from deepeval.tracing import observe
-from deepeval.metrics import ToolCorrectnessMetric, ArgumentCorrectnessMetric
+# from deepeval.metrics import ToolCorrectnessMetric, ArgumentCorrectnessMetric
 
-tool_correctness = ToolCorrectnessMetric(threshold=0.7, include_reason=True)
-argument_correctness = ArgumentCorrectnessMetric(threshold=0.7, include_reason=True)
+# Metrics commented out - requires OpenAI API key
+# tool_correctness = ToolCorrectnessMetric(threshold=0.7, include_reason=True)
+# argument_correctness = ArgumentCorrectnessMetric(threshold=0.7, include_reason=True)
 
 def init_llm() -> Any:
     """Initialize Gemini LLM model.
@@ -37,7 +38,9 @@ def init_llm() -> Any:
 
 
 
-@observe(type="llm", metrics=[tool_correctness, argument_correctness])
+# Metrics commented out - uncomment when OpenAI API key is available
+# @observe(type="llm", metrics=[tool_correctness, argument_correctness])
+@observe(type="llm")
 def call_llm(model: Any, messages: list[dict]) -> str:
     """Call LLM with formatted messages.
 

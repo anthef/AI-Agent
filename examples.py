@@ -37,14 +37,15 @@ def scenario_1_standard_order():
     print("=" * 80)
     print(f"Success: {result['success']}")
     if result["success"]:
-        summary = result["order_summary"]
-        print(f"Transaction ID: {summary['transaction_id']}")
-        print(f"Product: {summary['product']} x {summary['quantity']}")
-        print(f"Subtotal: ${summary['subtotal']:.2f}")
-        print(f"Discount: -${summary['discount']:.2f}")
-        print(f"Shipping: ${summary['shipping']:.2f}")
-        print(f"Total: ${summary['total']:.2f}")
-        print(f"Estimated Delivery: {summary['delivery_days']} days")
+        payment = result["tools"].get("process_payment", {})
+        print(f"Transaction ID: {payment.get('transaction_id', 'N/A')}")
+        
+        inventory = result["tools"].get("check_inventory", {})
+        discount = result["tools"].get("discount", {})
+        shipping = result["tools"].get("calculate_shipping", {})
+        
+        print(f"Product: {inventory.get('product_name', 'N/A')} x {inventory.get('requested_quantity', 0)}")
+        print(f"Total: ${payment.get('amount', 0):.2f}")
     print("=" * 80)
 
 
@@ -69,14 +70,9 @@ def scenario_2_vip_order():
     print("=" * 80)
     print(f"Success: {result['success']}")
     if result["success"]:
-        summary = result["order_summary"]
-        print(f"Transaction ID: {summary['transaction_id']}")
-        print(f"Product: {summary['product']} x {summary['quantity']}")
-        print(f"Subtotal: ${summary['subtotal']:.2f}")
-        print(f"Discount: -${summary['discount']:.2f}")
-        print(f"Shipping: ${summary['shipping']:.2f}")
-        print(f"Total: ${summary['total']:.2f}")
-        print(f"Estimated Delivery: {summary['delivery_days']} days")
+        payment = result["tools"].get("process_payment", {})
+        print(f"Transaction ID: {payment.get('transaction_id', 'N/A')}")
+        print(f"Total: ${payment.get('amount', 0):.2f}")
     print("=" * 80)
 
 
@@ -101,14 +97,9 @@ def scenario_3_bulk_order():
     print("=" * 80)
     print(f"Success: {result['success']}")
     if result["success"]:
-        summary = result["order_summary"]
-        print(f"Transaction ID: {summary['transaction_id']}")
-        print(f"Product: {summary['product']} x {summary['quantity']}")
-        print(f"Subtotal: ${summary['subtotal']:.2f}")
-        print(f"Discount: -${summary['discount']:.2f}")
-        print(f"Shipping: ${summary['shipping']:.2f}")
-        print(f"Total: ${summary['total']:.2f}")
-        print(f"Estimated Delivery: {summary['delivery_days']} days")
+        payment = result["tools"].get("process_payment", {})
+        print(f"Transaction ID: {payment.get('transaction_id', 'N/A')}")
+        print(f"Total: ${payment.get('amount', 0):.2f}")
     print("=" * 80)
 
 
