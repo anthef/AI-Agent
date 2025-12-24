@@ -115,9 +115,9 @@ def ecommerce_agent(user_input: str) -> dict:
     final_total = discount_result["final_price"] + shipping_result["shipping_cost"]
 
     # Tool 4: Process payment
-    print("\n[4] Processing payment...")
+    print("\n4. Processing payment")
     payment_result = process_payment(final_total, order_details["payment_method"])
-    print(f"    Result: {payment_result}")
+    print(f"Result: {payment_result}")
 
     if not payment_result["success"]:
         return {
@@ -127,7 +127,7 @@ def ecommerce_agent(user_input: str) -> dict:
         }
 
     # Tool 5: Send confirmation email
-    print("\n[5] Sending confirmation email")
+    print("\n5. Sending confirmation email")
     order_summary = {
         "transaction_id": payment_result["transaction_id"],
         "product": inventory_result["product_name"],
