@@ -14,7 +14,10 @@ from typing import Any
 
 import google.generativeai as genai
 from deepeval.tracing import observe
+from deepeval.metrics import ToolCorrectnessMetric, ArgumentCorrectnessMetric
 
+tool_correctness = ToolCorrectnessMetric(threshold=0.7, include_reason=True)
+argument_correctness = ArgumentCorrectnessMetric(threshold=0.7, include_reason=True)
 
 def init_llm() -> Any:
     """Initialize Gemini LLM model.
@@ -33,9 +36,13 @@ def init_llm() -> Any:
     return genai.GenerativeModel("gemini-2.5-flash")
 
 
-@observe(type="llm")
+
+@observe(type="llm", metrics=[tool_correctness, argument_correctness])
 def call_llm(model: Any, messages: list[dict]) -> str:
     """Call LLM with formatted messages.
+
+    This function has metrics attached for evaluating tool selection
+    and argument generation (action layer).
 
     Args:
         model (Any): Gemini model instance.
