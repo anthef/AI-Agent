@@ -34,7 +34,7 @@ def init_llm() -> Any:
         raise ValueError("GEMINI_API_KEY environment variable is not set")
 
     genai.configure(api_key=api_key)
-    return genai.GenerativeModel("gemini-2.5-flash")
+    return genai.GenerativeModel("gemini-2.5-flash-lite")
 
 
 
