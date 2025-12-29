@@ -21,9 +21,9 @@ from deepeval.metrics import (
 )
 from dotenv import load_dotenv
 
-from agent import ecommerce_agent
-from llm import call_llm
-from gemini_evaluator import GeminiEvaluator
+from task_1.agent import ecommerce_agent
+from task_1.llm import call_llm
+from task_2.gemini_evaluator import GeminiEvaluator
 
 gemini_evaluator = GeminiEvaluator(model_name="gemini-2.5-flash")
 

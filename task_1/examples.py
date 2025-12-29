@@ -11,7 +11,7 @@ References:
 
 from dotenv import load_dotenv
 
-from agent import ecommerce_agent
+from task_1.agent import ecommerce_agent
 
 load_dotenv()
 

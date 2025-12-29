@@ -15,8 +15,8 @@ from dotenv import load_dotenv
 import json
 import google.generativeai as genai
 
-from llm import init_llm
-from tools import (
+from task_1.llm import init_llm
+from task_1.tools import (
     apply_discount,
     calculate_shipping,
     check_inventory,
