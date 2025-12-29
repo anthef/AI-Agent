@@ -1,7 +1,7 @@
 """
 Solution A: Trace container with @observe, but NO Gemini call tracing.
 
-You:
+Flow:
 - Already have streamed logs (OpenAI/LangChain style).
 - You replay those logs into observed spans so DeepEval builds a real trace.
 - PlanQualityMetric runs via evals_iterator (required by DeepEval).

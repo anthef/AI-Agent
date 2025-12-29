@@ -11,9 +11,9 @@ References:
 """
 
 import os
-import json
+# import json
 import re
-from typing import Optional
+# from typing import Optional
 from google import genai
 from deepeval.models.base_model import DeepEvalBaseLLM
 
@@ -45,6 +45,5 @@ class GeminiEvaluator(DeepEvalBaseLLM):
         return self.model_name
 
     def _clean_json_response(self, text: str) -> str:
-        """Memastikan output LLM hanya berisi JSON murni."""
         text = re.sub(r"```json\s?|```", "", text).strip()
         return text
