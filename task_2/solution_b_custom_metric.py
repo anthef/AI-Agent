@@ -123,7 +123,6 @@ def synthesize_plan_from_task(task: str, tool_names: list[str]) -> str:
     Returns:
         str: A detailed, semantic plan.
     """
-    # Deduplicate while preserving order
     seen = set()
     unique_tools = []
     for tool in tool_names:
@@ -151,7 +150,6 @@ def synthesize_plan_from_task(task: str, tool_names: list[str]) -> str:
         f"discount_code={code_text}, payment_method={pay_text}, email={email_text}."
     )
 
-    # Map tool names to semantic descriptions
     tool_descriptions = {
         "check_inventory": f"Check inventory availability for {product_text} with quantity {qty_text}.",
         "apply_discount": f"Apply discount code {code_text} to the total price." if code else "Process pricing (no discount code provided).",
