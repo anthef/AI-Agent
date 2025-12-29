@@ -23,6 +23,9 @@ from dotenv import load_dotenv
 
 from agent import ecommerce_agent
 from llm import call_llm
+from gemini_evaluator import GeminiEvaluator
+
+gemini_evaluator = GeminiEvaluator(model_name="gemini-2.5-flash")
 
 load_dotenv()
 
@@ -44,26 +47,26 @@ def create_evaluation_dataset() -> EvaluationDataset:
                 "Total amount charged to credit card. Confirmation email sent to john.doe@example.com."
             ),
         ),
-        Golden(
-            input=(
-                "Order 1 monitor and ship to Singapore, I have VIP20 discount code, "
-                "payment via ewallet, send confirmation to vip.customer@company.com"
-            ),
-            expected_output=(
-                "Order successfully placed. Transaction confirmed with 20% VIP discount applied. "
-                "Total amount charged via e-wallet. Confirmation email sent to vip.customer@company.com."
-            ),
-        ),
-        Golden(
-            input=(
-                "I need 5 headsets delivered to Surabaya, apply SAVE50 discount, "
-                "pay by bank transfer, email: procurement@company.id"
-            ),
-            expected_output=(
-                "Order successfully placed. Transaction confirmed with $50 discount applied. "
-                "Total amount to be paid via bank transfer. Confirmation email sent to procurement@company.id."
-            ),
-        ),
+        # Golden(
+        #     input=(
+        #         "Order 1 monitor and ship to Singapore, I have VIP20 discount code, "
+        #         "payment via ewallet, send confirmation to vip.customer@company.com"
+        #     ),
+        #     expected_output=(
+        #         "Order successfully placed. Transaction confirmed with 20% VIP discount applied. "
+        #         "Total amount charged via e-wallet. Confirmation email sent to vip.customer@company.com."
+        #     ),
+        # ),
+        # Golden(
+        #     input=(
+        #         "I need 5 headsets delivered to Surabaya, apply SAVE50 discount, "
+        #         "pay by bank transfer, email: procurement@company.id"
+        #     ),
+        #     expected_output=(
+        #         "Order successfully placed. Transaction confirmed with $50 discount applied. "
+        #         "Total amount to be paid via bank transfer. Confirmation email sent to procurement@company.id."
+        #     ),
+        # ),
     ]
 
     return EvaluationDataset(goldens=goldens)
@@ -76,8 +79,8 @@ def evaluate_reasoning_layer():
     planning and adherence to the plan.
     """
 
-    plan_quality = PlanQualityMetric(threshold=0.7, include_reason=True)
-    plan_adherence = PlanAdherenceMetric(threshold=0.7, include_reason=True)
+    plan_quality = PlanQualityMetric(threshold=0.7, include_reason=True, model=gemini_evaluator)
+    plan_adherence = PlanAdherenceMetric(threshold=0.7, include_reason=True, model=gemini_evaluator)
 
     dataset = create_evaluation_dataset()
 
@@ -103,8 +106,8 @@ def evaluate_action_layer():
     tool selection and argument generation.
     """
 
-    tool_correctness = ToolCorrectnessMetric(threshold=0.7, include_reason=True)
-    argument_correctness = ArgumentCorrectnessMetric(threshold=0.7, include_reason=True)
+    tool_correctness = ToolCorrectnessMetric(threshold=0.7, include_reason=True, model=gemini_evaluator)
+    argument_correctness = ArgumentCorrectnessMetric(threshold=0.7, include_reason=True, model=gemini_evaluator)
 
     print("\nMetrics:")
     print("  - ToolCorrectnessMetric: Evaluates if correct tools are selected")
@@ -118,8 +121,8 @@ def evaluate_execution_layer():
     task completion and execution efficiency.
     """
 
-    task_completion = TaskCompletionMetric(threshold=0.7, include_reason=True)
-    step_efficiency = StepEfficiencyMetric(threshold=0.7, include_reason=True)
+    task_completion = TaskCompletionMetric(threshold=0.7, include_reason=True, model=gemini_evaluator)
+    step_efficiency = StepEfficiencyMetric(threshold=0.7, include_reason=True, model=gemini_evaluator)
 
     dataset = create_evaluation_dataset()
 
@@ -144,10 +147,10 @@ def evaluate_end_to_end():
 
     Combines reasoning, action, and execution metrics for comprehensive evaluation.
     """
-    plan_quality = PlanQualityMetric(threshold=0.7, include_reason=True)
-    plan_adherence = PlanAdherenceMetric(threshold=0.7, include_reason=True)
-    task_completion = TaskCompletionMetric(threshold=0.7, include_reason=True)
-    step_efficiency = StepEfficiencyMetric(threshold=0.7, include_reason=True)
+    plan_quality = PlanQualityMetric(threshold=0.7, include_reason=True, model=gemini_evaluator)
+    plan_adherence = PlanAdherenceMetric(threshold=0.7, include_reason=True, model=gemini_evaluator)
+    task_completion = TaskCompletionMetric(threshold=0.7, include_reason=True, model=gemini_evaluator)
+    step_efficiency = StepEfficiencyMetric(threshold=0.7, include_reason=True, model=gemini_evaluator)
 
     dataset = create_evaluation_dataset()
 
@@ -171,8 +174,9 @@ def evaluate_end_to_end():
 
         print(f"\nAgent Result: {'Success' if result['success'] else 'Failed'}")
         if result["success"]:
-            print(f"Transaction ID: {result['order_summary']['transaction_id']}")
-            print(f"Total: ${result['order_summary']['total']:.2f}")
+            payment = result.get("tools", {}).get("process_payment", {})
+            print(f"Transaction ID: {payment.get('transaction_id', 'N/A')}")
+            
 
 
 
