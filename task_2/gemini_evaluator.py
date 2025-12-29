@@ -18,7 +18,7 @@ from google import genai
 from deepeval.models.base_model import DeepEvalBaseLLM
 
 class GeminiEvaluator(DeepEvalBaseLLM):
-    def __init__(self, model_name: str = "gemini-2.5-flash"):
+    def __init__(self, model_name: str = "gemini-2.5-flash-lite"):
         self.model_name = model_name
         self.client = genai.Client(api_key=os.getenv("GOOGLE_API_KEY"))
 

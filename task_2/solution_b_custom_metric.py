@@ -7,14 +7,17 @@ You:
 - Use LLM judge (Gemini) to score alignment 0..1.
 - This is a custom metric. Not PlanQualityMetric built-in.
 
-Refs:
+Authors:
+    Anthony Edbert Feriyanto
+
+References:
 - Custom metrics should inherit BaseMetric and implement measure/a_measure. (DeepEval docs)
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any
 import asyncio
 import json
 import os
@@ -34,13 +37,21 @@ load_dotenv()
 @dataclass
 class StreamEvent:
     kind: str  # "planning" | "tool" | "final"
-    text: Optional[str] = None
-    tool_name: Optional[str] = None
-    tool_args: Optional[Dict[str, Any]] = None
-    tool_output: Optional[Any] = None
+    text: str | None = None
+    tool_name: str | None = None
+    tool_args: dict[str, Any] | None = None
+    tool_output: Any | None = None
 
 
-def extract_plan_text(events: List[StreamEvent]) -> str:
+def extract_plan_text(events: list[StreamEvent]) -> str:
+    """Extract planning text from event stream.
+
+    Args:
+        events (list[StreamEvent]): List of stream events.
+
+    Returns:
+        str: The extracted plan text, or empty string if none found.
+    """
     for e in events:
         if e.kind == "planning" and e.text:
             return e.text.strip()
@@ -58,11 +69,27 @@ def extract_plan_text(events: List[StreamEvent]) -> str:
 
 
 def extract_task_text(test_case: LLMTestCase) -> str:
+    """Extract task text from test case.
+
+    Args:
+        test_case (LLMTestCase): The test case containing input.
+
+    Returns:
+        str: The extracted task text.
+    """
     # Task biasanya = input user
     return str(getattr(test_case, "input", "") or "")
 
 
-def extract_tools_summary(events: List[StreamEvent]) -> str:
+def extract_tools_summary(events: list[StreamEvent]) -> str:
+    """Extract tools summary from event stream.
+
+    Args:
+        events (list[StreamEvent]): List of stream events.
+
+    Returns:
+        str: JSON string summary of tools called.
+    """
     tools = []
     for e in events:
         if e.kind == "tool":
@@ -76,10 +103,16 @@ def extract_tools_summary(events: List[StreamEvent]) -> str:
     return json.dumps(tools, ensure_ascii=False)
 
 
-def safe_json_extract(text: str) -> Dict[str, Any]:
-    """
-    Try parse JSON from model output.
+def safe_json_extract(text: str) -> dict[str, Any]:
+    """Try parse JSON from model output.
+
     Accepts raw JSON or JSON embedded in text.
+
+    Args:
+        text (str): The text containing JSON.
+
+    Returns:
+        dict[str, Any]: The parsed JSON dict, or empty dict if failure.
     """
     text = text.strip()
     try:
@@ -97,12 +130,21 @@ def safe_json_extract(text: str) -> Dict[str, Any]:
 
 
 class PlanQualityFromLogsMetric(BaseMetric):
+    """Custom metric to evaluate plan quality from logs."""
+
     def __init__(
         self,
         threshold: float = 0.5,
         model_name: str = "gemini-2.5-flash",
         include_reason: bool = True,
     ):
+        """Initialize the metric.
+
+        Args:
+            threshold (float, optional): Score threshold. Defaults to 0.5.
+            model_name (str, optional): Model for evaluation. Defaults to "gemini-2.5-flash".
+            include_reason (bool, optional): Whether to include reason. Defaults to True.
+        """
         self.threshold = threshold
         self.include_reason = include_reason
         self.evaluation_model = model_name
@@ -113,7 +155,7 @@ class PlanQualityFromLogsMetric(BaseMetric):
         self.success = False
         self.error = None
 
-    def _get_events(self, test_case: LLMTestCase) -> List[StreamEvent]:
+    def _get_events(self, test_case: LLMTestCase) -> list[StreamEvent]:
         # You can attach events however you want.
         # Supported patterns:
         # - test_case._events
@@ -123,7 +165,7 @@ class PlanQualityFromLogsMetric(BaseMetric):
             return []
         return events
 
-    def _judge(self, task: str, plan: str, tools_json: str, final_output: str) -> Dict[str, Any]:
+    def _judge(self, task: str, plan: str, tools_json: str, final_output: str) -> dict[str, Any]:
         prompt = (
             "You are an evaluator.\n"
             "Give a plan quality score in [0,1] for how well the plan can complete the task.\n"
@@ -152,6 +194,17 @@ class PlanQualityFromLogsMetric(BaseMetric):
         return {"score": score, "reason": str(reason)}
 
     def measure(self, test_case: LLMTestCase) -> float:
+        """Measure the metric for a test case.
+
+        Args:
+            test_case (LLMTestCase): The test case to evaluate.
+
+        Returns:
+            float: The calculated score.
+
+        Raises:
+            Exception: If measurement fails.
+        """
         try:
             events = self._get_events(test_case)
             task = extract_task_text(test_case)
@@ -160,7 +213,7 @@ class PlanQualityFromLogsMetric(BaseMetric):
             final_output = str(getattr(test_case, "actual_output", "") or "")
 
             if not plan:
-                # match PlanQuality behavior: pass by default if no plan
+
                 self.score = 1.0
                 self.reason = "No explicit plan found in logs. Default pass."
                 self.success = True
@@ -177,11 +230,20 @@ class PlanQualityFromLogsMetric(BaseMetric):
             raise
 
     async def a_measure(self, test_case: LLMTestCase) -> float:
+        """Measure command asynchronously.
+
+        Args:
+            test_case (LLMTestCase): The test case.
+
+        Returns:
+            float: The score.
+        """
         # If your GeminiEvaluator supports async, replace with true async call.
         return await asyncio.to_thread(self.measure, test_case)
 
 
 def main():
+    """Main execution entry point."""
     user_input = "Order 2 laptops to Jakarta"
     final_output = "Order placed successfully. Transaction ID: TXN123"
 
